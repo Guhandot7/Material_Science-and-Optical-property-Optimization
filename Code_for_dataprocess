@@ -1,0 +1,66 @@
+# Molecular data processing and analyses
+
+# Import libraries
+
+import pandas as pd
+import Pymatgen as Pyt
+import Matminer as mt
+
+##Inspecting the Chromophore data set revealed that many compounds in the SMILES column are repeated multiple times 
+# with respect to solvent column. Therefore, applying grouping function and take a look at the data set again will help.
+
+#check the current directory. the data is in the downloads directory. Therefore either provide full directory path or
+#move to that directory and then read the file file "DB for chromophore_Sci_Data_rev02.csv"
+
+#providing the full path name and capturing in dataframe
+
+dfch1 = pd.read_csv('/Users/Guhan/downloads/DB for chromophore_Sci_Data_rev02.csv')
+#check the size and number of unique entries in the SMILES column and compare with number of rows in the original file
+#If number of rows of unique entries is less than number of rows of orginal dfch1, then we have multiple entries
+#in the SMILES column
+#checking the shape (size of the original dfch1,  it contains 20236 rows (smiles entries) & 14 feature columns)
+
+dfch1.shape
+
+eliminating duplicates or multiple entries by extracting unique values
+#type the column name as argument string within square bracket after tha dataframe name and apply unique function
+#note
+
+dfch2 = dfch1['Chromophore'].unique()
+
+#checking the size of the unique smiles entry dataframe dfch2. It shows only 6815 smiles are unique
+dfch2.shape
+
+#another way of getting unique number of entries by number is apply nunique() function
+uniquecount = dfch1['Chromophore'].nunique()
+uniquecount
+#with only 6815 compunds as unique entries, multiple entries with respect solven column need to be grouped
+
+dfch3 = dfch1.groupby('Solvent')
+
+#Can write into multiple csv files
+
+for solvent, solvent_df in dfch3:
+    print(solvent)
+    print(solvent_df)
+    solvent_df.to_csv('{}.csv'.format(solvent))
+    
+#Extracting data from Pymatgen
+
+# import module
+import pymatgen.core as pg
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+ 
+# assign and display data
+lattice = pg.Lattice.cubic(4.2)
+print('LATTICE\n', lattice, '\n')
+structure = pg.Structure(lattice, ["Li", "Cl"],
+                         [[0, 0, 0],
+                          [0.5, 0.5, 0.5]])
+print('STRUCTURE', '\n', structure)
+ 
+# Convert structure of the compound
+# to user defined formats
+structure.to(fmt="poscar")
+structure.to(filename="POSCAR")
+structure.to(filename="CsCl.cif")
