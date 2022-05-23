@@ -9,4 +9,4 @@ with optimized electric and magnetic properties for varius applications with the
 
 2. Develop machine learning predictive models for indentifying fluourescent materials from others and predict their optical properties
 
-3. Use strcutural properties of materials as features for developing predictive models to select material combinations with desired electric and magnetic propertie
+3. Use strucutural properties of materials as features for developing predictive models to select material combinations with desired electric and magnetic propertie
