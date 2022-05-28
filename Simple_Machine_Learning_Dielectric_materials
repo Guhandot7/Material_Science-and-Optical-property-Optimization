@@ -1,0 +1,104 @@
+# Python code for simple machine_learning of dielectric materials to identify semiconductors based on band_gap values
+
+#Loading libraries
+import matminer
+import pandas as pd
+import pymatgen
+
+#Getting list of available datasets from Matminer
+from matminer.datasets import get_available_datasets
+get_available_datasets()
+
+#loading dielectric_constant dataset from matminer
+
+from matminer.datasets import load_dataset
+dfs=load_dataset("dielectric_constant")
+
+#Dropping all other columns(features) and creating df1 data set with only two columns and checking the size
+df1 = dfs[['formula','band_gap']]
+df1.shape
+
+#Create a label list with 0s using numpy zeros function and checking the szie
+import numpy as np
+label = np.zeros(1056, dtype = int)
+label.size
+
+#Capturing the label list created above into the df1 dataframe as a new column and checking
+df1['label'] = label
+
+df1.shape
+df1.head()
+
+#Dropping the fomula column as it is not needed for the model building and checking the shape again 
+#to ensure we have correct number of rows and two columns
+
+df1.drop('formula', axis = 1, inplace = True)
+df1.shape
+df1.head()
+#Assigning label values 0 or 1 to rows of lable column in a condition dependent manner
+#Based on the values of band_gap, we assing either 1 or o to rows
+#First create a list named condition with all conditions
+#Second create a list values that match with with each condition in a sequence 
+#Use numpy's np.select function with two aruguments (conditions, values) and change label column values
+
+conditions = [(df1['band_gap'] > 0.6) & (df1['band_gap'] < 2.5), (df1['band_gap'] < 0.6) & (df1['band_gap'] >2.5)]
+values = [1, 0]
+df1['label'] = np.select(conditions, values)
+
+#Cross Check again to examine whether np.select worked
+#As seen below, as designed, label values are 1 for band_gap values between 0.6 to 2.5
+df1.head()
+#Preparing nd_array for machine learning
+#calling the values of the column, we convert them inot lists series and capturing band_gap into X variable
+X = df1['band_gap'].values
+
+#Preparing nd_array for machine learning
+#calling the values of the column, we convert them inot lists series and capturing label into Y variable
+Y = df1['label'].values
+#Bulidng the RandomeFores regression model using sklearn library
+#import and define the RF regression, more paramters can be added later
+
+from sklearn.ensemble import RandomForestRegressor
+
+rf = RandomForestRegressor(n_estimators=100, random_state=1)
+#Convert the linera array list into column vector for matrix mulitplication using numpy reshape function
+#Now use the reshaped X and fit against Y label
+#the result is automatically stored in the memory
+
+rf.fit(X.reshape(-1,1), Y)
+
+#Callinf the prediction method and stroing the predction values into a variable list and check
+y_pred = rf.predict(X.reshape(-1,1))
+y_pred
+#To check using matiplot lib, first create X_grid (x-axis with min, max, and interval values)
+X_grid = np.arange(0, 10, 0.2)
+X_grid
+
+#Reshape the X_grid array into a column vector for plotting and check
+
+X_grid = X_grid.reshape((len(X_grid), 1))
+X_grid
+
+#Use Matplotlib to plot the original data and see the distribution of label values agains band_gap
+import matplotlib.pyplot as plt
+plt.scatter(X, Y, color = 'blue')
+plt.title('Random Forest Regression')
+plt.xlabel('band_gap')
+plt.ylabel('label')
+plt.show()
+
+#Use Matplotlib to plot the prediction data and see the distribution of predicted label values against band_gap
+#and compare with above graph
+#the results show our model predicts well
+plt.plot(X_grid, rf.predict(X_grid),
+         color = 'green')
+plt.title('Random Forest Regression')
+plt.xlabel('band_gap')
+plt.ylabel('prediction')
+plt.show()
+
+
+
+
+
+
